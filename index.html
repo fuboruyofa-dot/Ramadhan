@@ -108,20 +108,7 @@ body::after {
 }
 .filter-pill:hover { background: rgba(255,255,255,0.3); }
 
-.day-arrows { display: flex; gap: 8px; }
-.day-arr {
-  background: rgba(255,255,255,0.2);
-  border: none;
-  color: white;
-  width: 34px; height: 34px;
-  border-radius: 10px;
-  font-size: 18px;
-  font-weight: 800;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: background 0.2s;
-}
-.day-arr:hover { background: rgba(255,255,255,0.35); }
+
 
 .hero-body { position: relative; z-index: 2; }
 .hero-body h2 {
@@ -163,20 +150,29 @@ body::after {
 /* CALENDAR STRIP */
 .cal-strip {
   display: flex;
-  gap: 6px;
-  justify-content: space-between;
+  gap: 8px;
   margin-bottom: 20px;
   padding-bottom: 18px;
   border-bottom: 1px solid #f3f4f6;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-top: 4px;
+  cursor: grab;
 }
+.cal-strip::-webkit-scrollbar { display: none; }
+.cal-strip.grabbing { cursor: grabbing; }
 
 .cal-d {
-  flex: 1;
+  flex: 0 0 52px;
   text-align: center;
-  padding: 10px 2px;
+  padding: 10px 4px;
   border-radius: 14px;
   cursor: pointer;
   transition: all 0.2s;
+  scroll-snap-align: center;
+  user-select: none;
 }
 
 .cal-d .wday {
@@ -493,10 +489,6 @@ body::after {
       <button class="filter-pill" onclick="cycleFilter()">
         <span id="flabel">All Habits</span> ▾
       </button>
-      <div class="day-arrows">
-        <button class="day-arr" onclick="chDay(-1)">‹</button>
-        <button class="day-arr" onclick="chDay(1)">›</button>
-      </div>
     </div>
     <div class="hero-body">
       <h2 id="hday">Day 1 of Ramadan</h2>
@@ -569,9 +561,9 @@ const HABITS = [
   { id:'qiyam',    cat:'ibadah', e:'🌙', n:'Qiyamul Lail',        d:'Tahajjud + Witr prayer' },
   { id:'dhikr',    cat:'ibadah', e:'📿', n:'Morning Dhikr',       d:'Athkar pagi & petang' },
   { id:'tarawih',  cat:'ibadah', e:'🕌', n:'Tarawih Prayer',      d:'20 rakaat at mosque' },
-  { id:'exercise', cat:'health', e:'🏃', n:'Exercise Pre-Iftar',  d:'45 min before Iftar' },
+  { id:'exercise', cat:'health', e:'🏃', n:'Exercise Pre-Iftar',  d:'45 min sebelum Iftar' },
   { id:'hydrate',  cat:'health', e:'💧', n:'Hydrate 2L',          d:'After Iftar to Suhoor' },
-  { id:'sleep',    cat:'health', e:'😴', n:'Sleep 6–7 Hours',     d:'Nap after Dhuhr if needed' },
+  { id:'sleep',    cat:'health', e:'😴', n:'Sleep 6-7 Hours',     d:'Nap after Dhuhr if needed' },
   { id:'suhoor',   cat:'health', e:'🍚', n:'Eat Suhoor',          d:'Nutritious before Fajr' },
   { id:'embedded', cat:'career', e:'🔌', n:'Embedded Systems',    d:'1h · MCU, RTOS, protocols' },
   { id:'code',     cat:'career', e:'💻', n:'Coding Practice',     d:'1 problem or mini-project' },
@@ -582,113 +574,161 @@ const HABITS = [
   { id:'noscreen', cat:'mind',   e:'📵', n:'No Social Media',     d:'Before Fajr & before sleep' },
 ];
 
-const CATS = ['all','ibadah','health','career','mind'];
+const CATS    = ['all','ibadah','health','career','mind'];
 const CLABELS = { all:'All Habits', ibadah:'🕌 Ibadah', health:'💪 Health', career:'💻 Career', mind:'🧠 Mind' };
 const CCOLORS = { ibadah:'#f59e0b', health:'#10b981', career:'#3b82f6', mind:'#a855f7' };
-const QUIPS = ['Ain\'t no mountain high enough 💪','One day at a time 🌙','Consistency beats intensity ⭐','Barakallah — keep going! 🤲','This Ramadan defines you ✨'];
+const QUIPS   = ['Ain\'t no mountain high enough 💪','One day at a time 🌙','Consistency beats intensity ⭐','Barakallah — keep going! 🤲','This Ramadan defines you ✨'];
 
-let day = 1, filter = 'all', data = {};
-
-// Ramadan 1446H dimulai 19 Feb 2025.
-// Saat web dibuka, hari puasa otomatis dihitung dari tanggal hari ini.
-const RS = new Date(2025, 1, 19); // 19 Februari 2025
+// ── Ramadan 1447H dimulai 19 Februari 2026 ──
+// Normalisasi ke tengah malam agar jam buka web tidak mempengaruhi hasil
+const RS = new Date(2026, 1, 19);
 RS.setHours(0, 0, 0, 0);
 
 const getToday = () => {
-  const now = new Date(); now.setHours(0,0,0,0);
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
   const diff = Math.floor((now - RS) / 86400000) + 1;
   return Math.min(Math.max(diff, 1), 30);
 };
-const getDd = d => { if(!data[d]) data[d]={habits:new Set(),note:''}; return data[d]; };
+
 const getDayMeta = d => {
   const x = new Date(RS);
   x.setDate(x.getDate() + d - 1);
   return {
-    wd:   x.toLocaleDateString('id-ID', {weekday:'short'}).toUpperCase(),
+    wd:   x.toLocaleDateString('id-ID', { weekday: 'short' }).toUpperCase(),
     num:  x.getDate(),
-    full: x.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'})
+    full: x.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   };
 };
 
-function save() { try { const s={}; for(const[k,v] of Object.entries(data)) s[k]={habits:[...v.habits],note:v.note}; localStorage.setItem('rmd3',JSON.stringify(s)); } catch(e){} }
-function load() { try { const r=localStorage.getItem('rmd3'); if(r){ const p=JSON.parse(r); for(const[k,v] of Object.entries(p)) data[k]={habits:new Set(v.habits),note:v.note||''}; } } catch(e){} }
+let day    = getToday();
+let filter = 'all';
+let data   = {};
 
-function cycleFilter() {
-  filter = CATS[(CATS.indexOf(filter)+1)%CATS.length];
-  document.getElementById('flabel').textContent = CLABELS[filter];
-  renderHabits(); renderTabs();
+const getDd = d => { if (!data[d]) data[d] = { habits: new Set(), note: '' }; return data[d]; };
+
+function save() {
+  try {
+    const s = {};
+    for (const [k, v] of Object.entries(data)) s[k] = { habits: [...v.habits], note: v.note };
+    localStorage.setItem('rmd4', JSON.stringify(s));
+  } catch(e) {}
 }
 
-function chDay(d) { const n=day+d; if(n<1||n>30) return; day=n; renderAll(); }
+function load() {
+  try {
+    const r = localStorage.getItem('rmd4');
+    if (r) {
+      const p = JSON.parse(r);
+      for (const [k, v] of Object.entries(p)) data[k] = { habits: new Set(v.habits), note: v.note || '' };
+    }
+  } catch(e) {}
+}
 
+// ────────────────────────────────────────────
+// RENDER HERO
+// ────────────────────────────────────────────
 function renderHero() {
-  const {full} = getDayMeta(day);
-  document.getElementById('hday').textContent = `Day ${day} of Ramadan`;
+  const { full } = getDayMeta(day);
+  document.getElementById('hday').textContent  = `Hari ke-${day} Ramadan`;
   document.getElementById('hdate').textContent = full;
 }
 
+// ────────────────────────────────────────────
+// CALENDAR STRIP — scroll horizontal, klik untuk pindah hari
+// ────────────────────────────────────────────
 function renderCal() {
   const strip = document.getElementById('calstrip');
   strip.innerHTML = '';
-  for(let i=-2;i<=2;i++) {
-    const d=day+i;
-    if(d<1||d>30) continue;
-    const {wd,num} = getDayMeta(d);
+
+  for (let i = 1; i <= 30; i++) {
+    const { wd, num } = getDayMeta(i);
     const el = document.createElement('div');
-    el.className = 'cal-d'+(d===day?' cur':'');
-    el.innerHTML = `<div class="wday">${wd}</div><div class="dnum">${d}</div>`;
-    el.onclick = () => { day=d; renderAll(); };
+    el.className    = 'cal-d' + (i === day ? ' cur' : '');
+    el.dataset.dayN = i;
+    el.innerHTML    = `<div class="wday">${wd}</div><div class="dnum">${i}</div>`;
+    el.onclick      = () => { day = i; renderAll(); };
     strip.appendChild(el);
   }
+
+  // Scroll hari aktif ke tengah tanpa animasi saat pertama render
+  requestAnimationFrame(() => {
+    const active = strip.querySelector('.cur');
+    if (active) {
+      const offset = active.offsetLeft - strip.clientWidth / 2 + active.offsetWidth / 2;
+      strip.scrollTo({ left: offset, behavior: 'smooth' });
+    }
+  });
 }
 
+// ────────────────────────────────────────────
+// PROGRESS
+// ────────────────────────────────────────────
 function renderProgress() {
   const done = getDd(day).habits;
-  const pct = Math.round((done.size/HABITS.length)*100);
-  document.getElementById('pctlabel').textContent = pct+'%';
-  document.getElementById('pbar').style.width = pct+'%';
-  document.getElementById('bannerpct').textContent = pct+'%';
-  document.getElementById('bannersub').textContent = QUIPS[day%QUIPS.length];
+  const pct  = Math.round((done.size / HABITS.length) * 100);
+  document.getElementById('pctlabel').textContent  = pct + '%';
+  document.getElementById('pbar').style.width      = pct + '%';
+  document.getElementById('bannerpct').textContent = pct + '%';
+  document.getElementById('bannersub').textContent = QUIPS[day % QUIPS.length];
 }
 
+// ────────────────────────────────────────────
+// CATEGORY TABS
+// ────────────────────────────────────────────
 function renderTabs() {
   const wrap = document.getElementById('tabs');
   wrap.innerHTML = '';
   CATS.forEach(c => {
-    const b = document.createElement('button');
-    b.className = 'tab'+(filter===c?' on':'');
+    const b       = document.createElement('button');
+    b.className   = 'tab' + (filter === c ? ' on' : '');
     b.textContent = CLABELS[c];
-    b.onclick = () => { filter=c; document.getElementById('flabel').textContent=CLABELS[c]; renderHabits(); renderTabs(); };
+    b.onclick     = () => {
+      filter = c;
+      document.getElementById('flabel').textContent = CLABELS[c];
+      renderHabits(); renderTabs();
+    };
     wrap.appendChild(b);
   });
 }
 
+function cycleFilter() {
+  filter = CATS[(CATS.indexOf(filter) + 1) % CATS.length];
+  document.getElementById('flabel').textContent = CLABELS[filter];
+  renderHabits(); renderTabs();
+}
+
+// ────────────────────────────────────────────
+// HABIT LIST
+// ────────────────────────────────────────────
 function renderHabits() {
   const list = document.getElementById('habits');
   list.innerHTML = '';
-  const hs = filter==='all' ? HABITS : HABITS.filter(h=>h.cat===filter);
+  const hs   = filter === 'all' ? HABITS : HABITS.filter(h => h.cat === filter);
   const done = getDd(day).habits;
   document.getElementById('shlabel').textContent = CLABELS[filter];
 
   hs.forEach(h => {
     const isDone = done.has(h.id);
-    const r=18, circ=2*Math.PI*r, off=isDone?0:circ;
-    const el = document.createElement('div');
-    el.className = 'hitem'+(isDone?' done':'');
-    el.dataset.cat = h.cat;
-    el.innerHTML = `
+    const r = 18, circ = 2 * Math.PI * r, off = isDone ? 0 : circ;
+    const el  = document.createElement('div');
+    el.className    = 'hitem' + (isDone ? ' done' : '');
+    el.dataset.cat  = h.cat;
+    el.innerHTML    = `
       <div class="hring">
         <svg viewBox="0 0 44 44">
-          <circle class="rc-bg" cx="22" cy="22" r="${r}"/>
-          <circle class="rc-fill" cx="22" cy="22" r="${r}" stroke-dasharray="${circ}" stroke-dashoffset="${off}" style="stroke:${CCOLORS[h.cat]}"/>
+          <circle class="rc-bg"   cx="22" cy="22" r="${r}"/>
+          <circle class="rc-fill" cx="22" cy="22" r="${r}"
+            stroke-dasharray="${circ}" stroke-dashoffset="${off}"
+            style="stroke:${CCOLORS[h.cat]}"/>
         </svg>
         <span class="he">${h.e}</span>
       </div>
       <div class="hinfo">
         <div class="hname">${h.n}</div>
-        <div class="hdesc">${isDone?'✓ Completed · ':''} ${h.d}</div>
+        <div class="hdesc">${isDone ? '✓ Completed · ' : ''}${h.d}</div>
       </div>
-      <div class="hbtn">${isDone?'✓':''}</div>
+      <div class="hbtn">${isDone ? '✓' : ''}</div>
     `;
     el.onclick = () => toggleH(h.id);
     list.appendChild(el);
@@ -697,32 +737,36 @@ function renderHabits() {
 
 function toggleH(id) {
   const done = getDd(day).habits;
-  if(done.has(id)) { done.delete(id); }
-  else {
+  if (done.has(id)) {
+    done.delete(id);
+  } else {
     done.add(id);
     const msgs = ['✨ Allahu Akbar!','🌙 Barakallah!','💪 Masha\'Allah!','⭐ Keep going!','🔥 Alhamdulillah!'];
-    showToast(msgs[Math.floor(Math.random()*msgs.length)]);
+    showToast(msgs[Math.floor(Math.random() * msgs.length)]);
   }
   save();
   renderHabits(); renderProgress(); renderStreak(); renderStats(); renderCompletion();
 }
 
+// ────────────────────────────────────────────
+// COMPLETION RATE (7 hari terakhir)
+// ────────────────────────────────────────────
 function renderCompletion() {
-  const card = document.getElementById('compcard');
+  const card  = document.getElementById('compcard');
   card.innerHTML = '';
-  const cats = ['ibadah','health','career','mind'];
-  const icons = {ibadah:'🕌',health:'💪',career:'💻',mind:'🧠'};
-  const names = {ibadah:'Ibadah',health:'Health',career:'Career',mind:'Mind'};
+  const cats  = ['ibadah','health','career','mind'];
+  const icons = { ibadah:'🕌', health:'💪', career:'💻', mind:'🧠' };
+  const names = { ibadah:'Ibadah', health:'Health', career:'Career', mind:'Mind' };
   const today = getToday();
 
   cats.forEach(cat => {
-    const hs = HABITS.filter(h=>h.cat===cat);
-    let tot=0, dn=0;
-    for(let i=Math.max(1,today-6);i<=today;i++) {
-      const d=getDd(i);
-      hs.forEach(h => { tot++; if(d.habits.has(h.id)) dn++; });
+    const hs = HABITS.filter(h => h.cat === cat);
+    let tot = 0, dn = 0;
+    for (let i = Math.max(1, today - 6); i <= today; i++) {
+      const d = getDd(i);
+      hs.forEach(h => { tot++; if (d.habits.has(h.id)) dn++; });
     }
-    const pct = tot?Math.round((dn/tot)*100):0;
+    const pct = tot ? Math.round((dn / tot) * 100) : 0;
     const row = document.createElement('div');
     row.className = 'cr';
     row.innerHTML = `
@@ -737,47 +781,57 @@ function renderCompletion() {
   });
 }
 
+// ────────────────────────────────────────────
+// STREAK DOTS
+// ────────────────────────────────────────────
 function renderStreak() {
-  const dots = document.getElementById('sdots');
+  const dots  = document.getElementById('sdots');
   dots.innerHTML = '';
   const today = getToday();
-  for(let i=1;i<=30;i++) {
+
+  for (let i = 1; i <= 30; i++) {
     const dot = document.createElement('div');
     dot.className = 'sd';
-    const d = getDd(i);
-    const pct = d.habits.size/HABITS.length;
-    if(i<today || (i===today&&d.habits.size>0)) {
-      if(pct>=0.8) dot.classList.add('full');
-      else if(pct>0) dot.classList.add('part');
+    const d   = getDd(i);
+    const pct = d.habits.size / HABITS.length;
+    if (i < today || (i === today && d.habits.size > 0)) {
+      if (pct >= 0.8) dot.classList.add('full');
+      else if (pct > 0) dot.classList.add('part');
     }
-    if(i===today) dot.classList.add('now');
-    dot.title = `Day ${i}`;
+    if (i === today) dot.classList.add('now');
+    dot.title = `Hari ${i}`;
     dots.appendChild(dot);
   }
 }
 
+// ────────────────────────────────────────────
+// STATS
+// ────────────────────────────────────────────
 function renderStats() {
   const today = getToday();
-  let streak=0;
-  for(let i=today;i>=1;i--) {
-    if(getDd(i).habits.size/HABITS.length>=0.5) streak++;
+  let streak  = 0;
+  for (let i = today; i >= 1; i--) {
+    if (getDd(i).habits.size / HABITS.length >= 0.5) streak++;
     else break;
   }
-  let total=0,best=0,totalp=0,days=0;
-  for(let i=1;i<=30;i++) {
-    const d=getDd(i);
-    if(d.habits.size>0) {
-      total+=d.habits.size;
-      const p=Math.round((d.habits.size/HABITS.length)*100);
-      best=Math.max(best,p); totalp+=p; days++;
+  let total = 0, best = 0, totalp = 0, days = 0;
+  for (let i = 1; i <= 30; i++) {
+    const d = getDd(i);
+    if (d.habits.size > 0) {
+      total += d.habits.size;
+      const p = Math.round((d.habits.size / HABITS.length) * 100);
+      best = Math.max(best, p); totalp += p; days++;
     }
   }
-  document.getElementById('s1').textContent=streak;
-  document.getElementById('s2').textContent=total;
-  document.getElementById('s3').textContent=best+'%';
-  document.getElementById('s4').textContent=days?Math.round(totalp/days)+'%':'0%';
+  document.getElementById('s1').textContent = streak;
+  document.getElementById('s2').textContent = total;
+  document.getElementById('s3').textContent = best + '%';
+  document.getElementById('s4').textContent = days ? Math.round(totalp / days) + '%' : '0%';
 }
 
+// ────────────────────────────────────────────
+// NOTES
+// ────────────────────────────────────────────
 document.getElementById('ntxt').addEventListener('input', e => {
   getDd(day).note = e.target.value; save();
 });
@@ -789,9 +843,12 @@ function renderNotes() {
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('on');
-  setTimeout(()=>t.classList.remove('on'), 2400);
+  setTimeout(() => t.classList.remove('on'), 2400);
 }
 
+// ────────────────────────────────────────────
+// RENDER ALL
+// ────────────────────────────────────────────
 function renderAll() {
   renderHero(); renderCal(); renderProgress();
   renderTabs(); renderHabits();
@@ -801,6 +858,39 @@ function renderAll() {
 load();
 day = getToday();
 renderAll();
+
+// ────────────────────────────────────────────
+// DRAG-TO-SCROLL for calendar strip
+// ────────────────────────────────────────────
+(function() {
+  let isDown = false, startX, scrollLeft;
+
+  const strip = document.getElementById('calstrip');
+
+  const onDown = e => {
+    isDown   = true;
+    strip.classList.add('grabbing');
+    startX     = (e.pageX || e.touches[0].pageX) - strip.offsetLeft;
+    scrollLeft = strip.scrollLeft;
+  };
+  const onUp = () => { isDown = false; strip.classList.remove('grabbing'); };
+  const onMove = e => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x    = (e.pageX || e.touches[0].pageX) - strip.offsetLeft;
+    const walk = (x - startX) * 1.2;
+    strip.scrollLeft = scrollLeft - walk;
+  };
+
+  strip.addEventListener('mousedown',  onDown);
+  strip.addEventListener('touchstart', onDown, { passive: true });
+  strip.addEventListener('mouseleave', onUp);
+  strip.addEventListener('mouseup',    onUp);
+  strip.addEventListener('touchend',   onUp);
+  strip.addEventListener('mousemove',  onMove);
+  strip.addEventListener('touchmove',  onMove, { passive: false });
+})();
+
 </script>
 </body>
 </html>
