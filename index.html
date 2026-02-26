@@ -588,11 +588,27 @@ const CCOLORS = { ibadah:'#f59e0b', health:'#10b981', career:'#3b82f6', mind:'#a
 const QUIPS = ['Ain\'t no mountain high enough 💪','One day at a time 🌙','Consistency beats intensity ⭐','Barakallah — keep going! 🤲','This Ramadan defines you ✨'];
 
 let day = 1, filter = 'all', data = {};
-const RS = new Date(2025,1,19);
 
-const getToday = () => Math.min(Math.max(Math.floor((new Date()-RS)/86400000)+1,1),30);
+// Ramadan 1446H dimulai 19 Feb 2025.
+// Saat web dibuka, hari puasa otomatis dihitung dari tanggal hari ini.
+const RS = new Date(2025, 1, 19); // 19 Februari 2025
+RS.setHours(0, 0, 0, 0);
+
+const getToday = () => {
+  const now = new Date(); now.setHours(0,0,0,0);
+  const diff = Math.floor((now - RS) / 86400000) + 1;
+  return Math.min(Math.max(diff, 1), 30);
+};
 const getDd = d => { if(!data[d]) data[d]={habits:new Set(),note:''}; return data[d]; };
-const getDayMeta = d => { const x=new Date(RS); x.setDate(x.getDate()+d-1); return { wd:x.toLocaleDateString('en',{weekday:'short'}).toUpperCase(), num:x.getDate(), full:x.toLocaleDateString('en',{weekday:'long',day:'numeric',month:'long'}) }; };
+const getDayMeta = d => {
+  const x = new Date(RS);
+  x.setDate(x.getDate() + d - 1);
+  return {
+    wd:   x.toLocaleDateString('id-ID', {weekday:'short'}).toUpperCase(),
+    num:  x.getDate(),
+    full: x.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'})
+  };
+};
 
 function save() { try { const s={}; for(const[k,v] of Object.entries(data)) s[k]={habits:[...v.habits],note:v.note}; localStorage.setItem('rmd3',JSON.stringify(s)); } catch(e){} }
 function load() { try { const r=localStorage.getItem('rmd3'); if(r){ const p=JSON.parse(r); for(const[k,v] of Object.entries(p)) data[k]={habits:new Set(v.habits),note:v.note||''}; } } catch(e){} }
