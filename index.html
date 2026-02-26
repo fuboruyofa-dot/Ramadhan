@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ramadan Growth Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #ede9ff;
+  font-family: 'Nunito', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 32px 16px 80px;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, #c4b5fd40, transparent 70%);
+  top: -150px; right: -150px;
+  pointer-events: none;
+}
+body::after {
+  content: '';
+  position: fixed;
+  width: 350px; height: 350px;
+  background: radial-gradient(circle, #a78bfa25, transparent 70%);
+  bottom: -80px; left: -100px;
+  pointer-events: none;
+}
+
+.phone {
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+  z-index: 1;
+}
+
+/* HERO */
+.hero {
+  background: linear-gradient(140deg, #6d28d9 0%, #9333ea 55%, #c084fc 100%);
+  border-radius: 28px;
+  padding: 26px 24px 96px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: -76px;
+  box-shadow: 0 20px 56px rgba(109,40,217,0.4);
+}
+
+.hero-blob1 {
+  position: absolute;
+  width: 220px; height: 220px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 50%;
+  top: -70px; right: -70px;
+}
+.hero-blob2 {
+  position: absolute;
+  width: 120px; height: 120px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 50%;
+  bottom: 30px; left: -30px;
+}
+.hero-blob3 {
+  position: absolute;
+  width: 60px; height: 60px;
+  background: rgba(255,200,80,0.3);
+  border-radius: 50%;
+  top: 20px; right: 110px;
+  animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,100% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(1.3); opacity: 0.7; }
+}
+
+.hero-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+  position: relative;
+  z-index: 2;
+}
+
+.filter-pill {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 7px 16px;
+  border-radius: 99px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s;
+}
+.filter-pill:hover { background: rgba(255,255,255,0.3); }
+
+.day-arrows { display: flex; gap: 8px; }
+.day-arr {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.day-arr:hover { background: rgba(255,255,255,0.35); }
+
+.hero-body { position: relative; z-index: 2; }
+.hero-body h2 {
+  font-size: 30px;
+  font-weight: 900;
+  color: white;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+.hero-body .sub { font-size: 13px; color: rgba(255,255,255,0.7); font-weight: 600; }
+.hero-body .arabic { font-family: 'Amiri', serif; font-size: 16px; color: rgba(255,255,255,0.55); margin-top: 2px; }
+
+.hero-float {
+  position: absolute;
+  right: 18px;
+  bottom: 55px;
+  font-size: 78px;
+  filter: drop-shadow(0 8px 20px rgba(0,0,0,0.25));
+  animation: floaty 3.5s ease-in-out infinite;
+  z-index: 2;
+}
+
+@keyframes floaty {
+  0%,100% { transform: translateY(0) rotate(-4deg); }
+  50% { transform: translateY(-12px) rotate(4deg); }
+}
+
+/* MAIN CARD */
+.main-card {
+  background: white;
+  border-radius: 26px;
+  padding: 20px;
+  margin: 0 2px 14px;
+  box-shadow: 0 8px 40px rgba(109,40,217,0.12);
+  position: relative;
+  z-index: 2;
+}
+
+/* CALENDAR STRIP */
+.cal-strip {
+  display: flex;
+  gap: 6px;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.cal-d {
+  flex: 1;
+  text-align: center;
+  padding: 10px 2px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cal-d .wday {
+  font-size: 10px; font-weight: 800; color: #9ca3af;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  margin-bottom: 7px;
+}
+
+.cal-d .dnum {
+  font-size: 19px; font-weight: 900; color: #374151;
+}
+
+.cal-d.cur {
+  background: linear-gradient(140deg, #6d28d9, #9333ea);
+  box-shadow: 0 4px 16px rgba(109,40,217,0.4);
+}
+
+.cal-d.cur .wday,
+.cal-d.cur .dnum { color: white; }
+
+/* PROGRESS */
+.prog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.prog-header span { font-size: 13px; color: #6b7280; font-weight: 700; }
+.prog-header .pp { font-weight: 900; color: #7c3aed; font-size: 14px; }
+
+.pbar { height: 8px; background: #f3f4f6; border-radius: 99px; overflow: hidden; }
+.pbar-f {
+  height: 100%;
+  background: linear-gradient(90deg, #ec4899, #9333ea);
+  border-radius: 99px;
+  transition: width 0.55s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow: 0 2px 8px rgba(147,51,234,0.4);
+}
+
+/* TODAY HERO BANNER */
+.today-banner {
+  background: linear-gradient(135deg, #6d28d9 0%, #9333ea 60%, #c084fc 100%);
+  border-radius: 22px;
+  padding: 20px 18px;
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(109,40,217,0.3);
+}
+
+.today-banner::before {
+  content: '';
+  position: absolute;
+  width: 180px; height: 180px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 50%;
+  top: -60px; right: -40px;
+}
+
+.tb-pct { font-size: 52px; font-weight: 900; color: white; line-height: 1; }
+.tb-label { font-size: 15px; font-weight: 800; color: rgba(255,255,255,0.9); }
+.tb-sub { font-size: 12px; color: rgba(255,255,255,0.6); font-weight: 600; margin-top: 2px; }
+.tb-float { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); font-size: 64px; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2)); }
+
+/* SECTION HEAD */
+.sh {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0 10px 2px;
+}
+.sh h3 { font-size: 17px; font-weight: 900; color: #1f2937; }
+.sh span { font-size: 13px; font-weight: 800; color: #9333ea; cursor: pointer; }
+
+/* CAT TABS */
+.tabs {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+
+.tab {
+  padding: 7px 15px;
+  border-radius: 99px;
+  border: none;
+  font-family: 'Nunito', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  background: white;
+  color: #9ca3af;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.tab.on {
+  background: linear-gradient(135deg, #6d28d9, #9333ea);
+  color: white;
+  box-shadow: 0 4px 14px rgba(109,40,217,0.35);
+}
+
+/* HABITS */
+.habits { display: flex; flex-direction: column; gap: 10px; margin-bottom: 4px; }
+
+.hitem {
+  background: white;
+  border-radius: 18px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  border: 2px solid transparent;
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.hitem::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.hitem.done { border-color: #e9d5ff; }
+.hitem.done::before { opacity: 1; background: linear-gradient(135deg, #faf5ff, white); }
+.hitem:active { transform: scale(0.97); }
+
+.hring {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 19px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.hring svg {
+  position: absolute;
+  inset: 0; width: 100%; height: 100%;
+  transform: rotate(-90deg);
+}
+.hring svg circle { fill: none; stroke-width: 3; stroke-linecap: round; }
+.rc-bg { stroke: #f3f4f6; }
+.rc-fill { transition: stroke-dashoffset 0.6s cubic-bezier(0.34,1.56,0.64,1); }
+
+.he { position: relative; z-index: 1; }
+
+.hinfo { flex: 1; min-width: 0; position: relative; z-index: 1; }
+.hname { font-size: 14px; font-weight: 800; color: #111827; margin-bottom: 3px; }
+.hdesc { font-size: 11px; color: #9ca3af; font-weight: 600; }
+.hitem.done .hdesc { color: #a78bfa; }
+
+.hbtn {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 2.5px solid #e5e7eb;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800;
+  flex-shrink: 0;
+  color: transparent;
+  transition: all 0.25s;
+  position: relative; z-index: 1;
+}
+
+.hitem.done .hbtn {
+  background: linear-gradient(135deg, #6d28d9, #9333ea);
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 4px 12px rgba(109,40,217,0.4);
+}
+
+/* cat bg/ring colors */
+[data-cat="ibadah"] .hring { background: #fef3c7; }
+[data-cat="ibadah"] .rc-fill { stroke: #f59e0b; }
+[data-cat="health"] .hring { background: #d1fae5; }
+[data-cat="health"] .rc-fill { stroke: #10b981; }
+[data-cat="career"] .hring { background: #dbeafe; }
+[data-cat="career"] .rc-fill { stroke: #3b82f6; }
+[data-cat="mind"] .hring { background: #f3e8ff; }
+[data-cat="mind"] .rc-fill { stroke: #a855f7; }
+
+/* COMPLETION */
+.comp-card {
+  background: white;
+  border-radius: 22px;
+  padding: 18px;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.05);
+  margin-bottom: 14px;
+}
+
+.cr { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.cr:last-child { margin-bottom: 0; }
+.cr-icon { font-size: 20px; width: 32px; text-align: center; flex-shrink: 0; }
+.cr-info { flex: 1; }
+.cr-name { font-size: 13px; font-weight: 800; color: #1f2937; margin-bottom: 5px; }
+.cr-bar { height: 6px; background: #f3f4f6; border-radius: 99px; overflow: hidden; }
+.cr-fill { height: 100%; border-radius: 99px; transition: width 0.7s cubic-bezier(0.34,1.56,0.64,1); }
+.cr-pct { font-size: 13px; font-weight: 900; color: #6b7280; width: 34px; text-align: right; flex-shrink: 0; }
+
+/* STREAK */
+.streak-card {
+  background: white;
+  border-radius: 22px;
+  padding: 18px;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.05);
+  margin-bottom: 14px;
+}
+
+.sdots {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.sd {
+  aspect-ratio: 1;
+  border-radius: 5px;
+  background: #f3f4f6;
+  transition: all 0.3s;
+}
+.sd.full { background: linear-gradient(135deg, #6d28d9, #a855f7); box-shadow: 0 2px 6px rgba(109,40,217,0.3); }
+.sd.part { background: #c4b5fd; }
+.sd.now { outline: 2.5px solid #6d28d9; outline-offset: 1px; }
+
+/* STATS */
+.sgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.stile {
+  background: white;
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  text-align: center;
+}
+.sv {
+  font-size: 36px; font-weight: 900;
+  background: linear-gradient(135deg, #6d28d9, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1; margin-bottom: 4px;
+}
+.sl { font-size: 11px; font-weight: 800; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* NOTES */
+.notes-card {
+  background: white;
+  border-radius: 22px;
+  padding: 18px;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.05);
+  margin-bottom: 20px;
+}
+.notes-card h3 { font-size: 15px; font-weight: 900; color: #1f2937; margin-bottom: 10px; }
+.ntxt {
+  width: 100%;
+  background: #faf5ff;
+  border: 1.5px solid #e9d5ff;
+  border-radius: 14px;
+  padding: 13px;
+  color: #374151;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  resize: none;
+  outline: none;
+  min-height: 88px;
+  line-height: 1.65;
+  transition: border-color 0.2s;
+}
+.ntxt:focus { border-color: #9333ea; }
+.ntxt::placeholder { color: #c4b5fd; }
+
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 30px; left: 50%;
+  transform: translateX(-50%) translateY(60px);
+  background: linear-gradient(135deg, #6d28d9, #9333ea);
+  color: white;
+  padding: 11px 22px;
+  border-radius: 99px;
+  font-size: 13px; font-weight: 800;
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  z-index: 999;
+  box-shadow: 0 8px 24px rgba(109,40,217,0.4);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <!-- HERO HEADER -->
+  <div class="hero">
+    <div class="hero-blob1"></div>
+    <div class="hero-blob2"></div>
+    <div class="hero-blob3"></div>
+    <div class="hero-top">
+      <button class="filter-pill" onclick="cycleFilter()">
+        <span id="flabel">All Habits</span> ▾
+      </button>
+      <div class="day-arrows">
+        <button class="day-arr" onclick="chDay(-1)">‹</button>
+        <button class="day-arr" onclick="chDay(1)">›</button>
+      </div>
+    </div>
+    <div class="hero-body">
+      <h2 id="hday">Day 1 of Ramadan</h2>
+      <div class="sub" id="hdate">Loading...</div>
+      <div class="arabic">رمضان كريم — ١٤٤٦</div>
+    </div>
+    <div class="hero-float">🌙</div>
+  </div>
+
+  <!-- CALENDAR + PROGRESS -->
+  <div class="main-card">
+    <div class="cal-strip" id="calstrip"></div>
+    <div class="prog-header">
+      <span>You're almost done, go ahead!</span>
+      <span class="pp" id="pctlabel">0%</span>
+    </div>
+    <div class="pbar"><div class="pbar-f" id="pbar" style="width:0%"></div></div>
+  </div>
+
+  <!-- TODAY BANNER -->
+  <div class="today-banner">
+    <div class="tb-pct" id="bannerpct">0%</div>
+    <div class="tb-label">Today's Habit</div>
+    <div class="tb-sub" id="bannersub">Ain't no mountain high enough</div>
+    <div class="tb-float">📋</div>
+  </div>
+
+  <!-- HABITS -->
+  <div class="sh">
+    <h3 id="shlabel">Today's Habits</h3>
+    <span onclick="cycleFilter()">See all ›</span>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+  <div class="habits" id="habits"></div>
+
+  <!-- COMPLETION RATE -->
+  <div class="sh">
+    <h3>Completion Rate</h3>
+    <span>This Week</span>
+  </div>
+  <div class="comp-card" id="compcard"></div>
+
+  <!-- STREAK -->
+  <div class="sh"><h3>30-Day Streak</h3></div>
+  <div class="streak-card"><div class="sdots" id="sdots"></div></div>
+
+  <!-- STATS -->
+  <div class="sh"><h3>My Stats</h3></div>
+  <div class="sgrid">
+    <div class="stile"><div class="sv" id="s1">0</div><div class="sl">Day Streak</div></div>
+    <div class="stile"><div class="sv" id="s2">0</div><div class="sl">Total Done</div></div>
+    <div class="stile"><div class="sv" id="s3">0%</div><div class="sl">Best Day</div></div>
+    <div class="stile"><div class="sv" id="s4">0%</div><div class="sl">Avg Rate</div></div>
+  </div>
+
+  <!-- NOTES -->
+  <div class="notes-card">
+    <h3>✍️ Daily Reflection</h3>
+    <textarea class="ntxt" id="ntxt" placeholder="Write your gratitude, goals, or reflections..."></textarea>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const HABITS = [
+  { id:'quran',    cat:'ibadah', e:'📖', n:'Read Al-Quran',       d:'1 Juz · with meaning' },
+  { id:'fajr',     cat:'ibadah', e:'🌅', n:'Fajr on Time',        d:'Before sunrise, no snooze' },
+  { id:'qiyam',    cat:'ibadah', e:'🌙', n:'Qiyamul Lail',        d:'Tahajjud + Witr prayer' },
+  { id:'dhikr',    cat:'ibadah', e:'📿', n:'Morning Dhikr',       d:'Athkar pagi & petang' },
+  { id:'tarawih',  cat:'ibadah', e:'🕌', n:'Tarawih Prayer',      d:'20 rakaat at mosque' },
+  { id:'exercise', cat:'health', e:'🏃', n:'Exercise Pre-Iftar',  d:'45 min before Iftar' },
+  { id:'hydrate',  cat:'health', e:'💧', n:'Hydrate 2L',          d:'After Iftar to Suhoor' },
+  { id:'sleep',    cat:'health', e:'😴', n:'Sleep 6–7 Hours',     d:'Nap after Dhuhr if needed' },
+  { id:'suhoor',   cat:'health', e:'🍚', n:'Eat Suhoor',          d:'Nutritious before Fajr' },
+  { id:'embedded', cat:'career', e:'🔌', n:'Embedded Systems',    d:'1h · MCU, RTOS, protocols' },
+  { id:'code',     cat:'career', e:'💻', n:'Coding Practice',     d:'1 problem or mini-project' },
+  { id:'english',  cat:'career', e:'🗣️', n:'English Practice',    d:'30 min reading/speaking' },
+  { id:'linkedin', cat:'career', e:'🔗', n:'LinkedIn / Network',  d:'Post, comment, or connect' },
+  { id:'reading',  cat:'mind',   e:'📚', n:'Read a Book',         d:'20 pages · tech/growth' },
+  { id:'journal',  cat:'mind',   e:'✍️', n:'Gratitude Journal',   d:'3 things grateful for' },
+  { id:'noscreen', cat:'mind',   e:'📵', n:'No Social Media',     d:'Before Fajr & before sleep' },
+];
+
+const CATS = ['all','ibadah','health','career','mind'];
+const CLABELS = { all:'All Habits', ibadah:'🕌 Ibadah', health:'💪 Health', career:'💻 Career', mind:'🧠 Mind' };
+const CCOLORS = { ibadah:'#f59e0b', health:'#10b981', career:'#3b82f6', mind:'#a855f7' };
+const QUIPS = ['Ain\'t no mountain high enough 💪','One day at a time 🌙','Consistency beats intensity ⭐','Barakallah — keep going! 🤲','This Ramadan defines you ✨'];
+
+let day = 1, filter = 'all', data = {};
+const RS = new Date(2025,1,19);
+
+const getToday = () => Math.min(Math.max(Math.floor((new Date()-RS)/86400000)+1,1),30);
+const getDd = d => { if(!data[d]) data[d]={habits:new Set(),note:''}; return data[d]; };
+const getDayMeta = d => { const x=new Date(RS); x.setDate(x.getDate()+d-1); return { wd:x.toLocaleDateString('en',{weekday:'short'}).toUpperCase(), num:x.getDate(), full:x.toLocaleDateString('en',{weekday:'long',day:'numeric',month:'long'}) }; };
+
+function save() { try { const s={}; for(const[k,v] of Object.entries(data)) s[k]={habits:[...v.habits],note:v.note}; localStorage.setItem('rmd3',JSON.stringify(s)); } catch(e){} }
+function load() { try { const r=localStorage.getItem('rmd3'); if(r){ const p=JSON.parse(r); for(const[k,v] of Object.entries(p)) data[k]={habits:new Set(v.habits),note:v.note||''}; } } catch(e){} }
+
+function cycleFilter() {
+  filter = CATS[(CATS.indexOf(filter)+1)%CATS.length];
+  document.getElementById('flabel').textContent = CLABELS[filter];
+  renderHabits(); renderTabs();
+}
+
+function chDay(d) { const n=day+d; if(n<1||n>30) return; day=n; renderAll(); }
+
+function renderHero() {
+  const {full} = getDayMeta(day);
+  document.getElementById('hday').textContent = `Day ${day} of Ramadan`;
+  document.getElementById('hdate').textContent = full;
+}
+
+function renderCal() {
+  const strip = document.getElementById('calstrip');
+  strip.innerHTML = '';
+  for(let i=-2;i<=2;i++) {
+    const d=day+i;
+    if(d<1||d>30) continue;
+    const {wd,num} = getDayMeta(d);
+    const el = document.createElement('div');
+    el.className = 'cal-d'+(d===day?' cur':'');
+    el.innerHTML = `<div class="wday">${wd}</div><div class="dnum">${d}</div>`;
+    el.onclick = () => { day=d; renderAll(); };
+    strip.appendChild(el);
+  }
+}
+
+function renderProgress() {
+  const done = getDd(day).habits;
+  const pct = Math.round((done.size/HABITS.length)*100);
+  document.getElementById('pctlabel').textContent = pct+'%';
+  document.getElementById('pbar').style.width = pct+'%';
+  document.getElementById('bannerpct').textContent = pct+'%';
+  document.getElementById('bannersub').textContent = QUIPS[day%QUIPS.length];
+}
+
+function renderTabs() {
+  const wrap = document.getElementById('tabs');
+  wrap.innerHTML = '';
+  CATS.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'tab'+(filter===c?' on':'');
+    b.textContent = CLABELS[c];
+    b.onclick = () => { filter=c; document.getElementById('flabel').textContent=CLABELS[c]; renderHabits(); renderTabs(); };
+    wrap.appendChild(b);
+  });
+}
+
+function renderHabits() {
+  const list = document.getElementById('habits');
+  list.innerHTML = '';
+  const hs = filter==='all' ? HABITS : HABITS.filter(h=>h.cat===filter);
+  const done = getDd(day).habits;
+  document.getElementById('shlabel').textContent = CLABELS[filter];
+
+  hs.forEach(h => {
+    const isDone = done.has(h.id);
+    const r=18, circ=2*Math.PI*r, off=isDone?0:circ;
+    const el = document.createElement('div');
+    el.className = 'hitem'+(isDone?' done':'');
+    el.dataset.cat = h.cat;
+    el.innerHTML = `
+      <div class="hring">
+        <svg viewBox="0 0 44 44">
+          <circle class="rc-bg" cx="22" cy="22" r="${r}"/>
+          <circle class="rc-fill" cx="22" cy="22" r="${r}" stroke-dasharray="${circ}" stroke-dashoffset="${off}" style="stroke:${CCOLORS[h.cat]}"/>
+        </svg>
+        <span class="he">${h.e}</span>
+      </div>
+      <div class="hinfo">
+        <div class="hname">${h.n}</div>
+        <div class="hdesc">${isDone?'✓ Completed · ':''} ${h.d}</div>
+      </div>
+      <div class="hbtn">${isDone?'✓':''}</div>
+    `;
+    el.onclick = () => toggleH(h.id);
+    list.appendChild(el);
+  });
+}
+
+function toggleH(id) {
+  const done = getDd(day).habits;
+  if(done.has(id)) { done.delete(id); }
+  else {
+    done.add(id);
+    const msgs = ['✨ Allahu Akbar!','🌙 Barakallah!','💪 Masha\'Allah!','⭐ Keep going!','🔥 Alhamdulillah!'];
+    showToast(msgs[Math.floor(Math.random()*msgs.length)]);
+  }
+  save();
+  renderHabits(); renderProgress(); renderStreak(); renderStats(); renderCompletion();
+}
+
+function renderCompletion() {
+  const card = document.getElementById('compcard');
+  card.innerHTML = '';
+  const cats = ['ibadah','health','career','mind'];
+  const icons = {ibadah:'🕌',health:'💪',career:'💻',mind:'🧠'};
+  const names = {ibadah:'Ibadah',health:'Health',career:'Career',mind:'Mind'};
+  const today = getToday();
+
+  cats.forEach(cat => {
+    const hs = HABITS.filter(h=>h.cat===cat);
+    let tot=0, dn=0;
+    for(let i=Math.max(1,today-6);i<=today;i++) {
+      const d=getDd(i);
+      hs.forEach(h => { tot++; if(d.habits.has(h.id)) dn++; });
+    }
+    const pct = tot?Math.round((dn/tot)*100):0;
+    const row = document.createElement('div');
+    row.className = 'cr';
+    row.innerHTML = `
+      <div class="cr-icon">${icons[cat]}</div>
+      <div class="cr-info">
+        <div class="cr-name">${names[cat]}</div>
+        <div class="cr-bar"><div class="cr-fill" style="width:${pct}%;background:${CCOLORS[cat]}"></div></div>
+      </div>
+      <div class="cr-pct">${pct}%</div>
+    `;
+    card.appendChild(row);
+  });
+}
+
+function renderStreak() {
+  const dots = document.getElementById('sdots');
+  dots.innerHTML = '';
+  const today = getToday();
+  for(let i=1;i<=30;i++) {
+    const dot = document.createElement('div');
+    dot.className = 'sd';
+    const d = getDd(i);
+    const pct = d.habits.size/HABITS.length;
+    if(i<today || (i===today&&d.habits.size>0)) {
+      if(pct>=0.8) dot.classList.add('full');
+      else if(pct>0) dot.classList.add('part');
+    }
+    if(i===today) dot.classList.add('now');
+    dot.title = `Day ${i}`;
+    dots.appendChild(dot);
+  }
+}
+
+function renderStats() {
+  const today = getToday();
+  let streak=0;
+  for(let i=today;i>=1;i--) {
+    if(getDd(i).habits.size/HABITS.length>=0.5) streak++;
+    else break;
+  }
+  let total=0,best=0,totalp=0,days=0;
+  for(let i=1;i<=30;i++) {
+    const d=getDd(i);
+    if(d.habits.size>0) {
+      total+=d.habits.size;
+      const p=Math.round((d.habits.size/HABITS.length)*100);
+      best=Math.max(best,p); totalp+=p; days++;
+    }
+  }
+  document.getElementById('s1').textContent=streak;
+  document.getElementById('s2').textContent=total;
+  document.getElementById('s3').textContent=best+'%';
+  document.getElementById('s4').textContent=days?Math.round(totalp/days)+'%':'0%';
+}
+
+document.getElementById('ntxt').addEventListener('input', e => {
+  getDd(day).note = e.target.value; save();
+});
+
+function renderNotes() {
+  document.getElementById('ntxt').value = getDd(day).note;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('on');
+  setTimeout(()=>t.classList.remove('on'), 2400);
+}
+
+function renderAll() {
+  renderHero(); renderCal(); renderProgress();
+  renderTabs(); renderHabits();
+  renderCompletion(); renderStreak(); renderStats(); renderNotes();
+}
+
+load();
+day = getToday();
+renderAll();
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "ramadan-growth-tracker",
+  "version": "1.0.0",
+  "description": "Ramadan Personal Growth & Habit Tracker - 1446H",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx serve ."
+  },
+  "keywords": ["ramadan", "habit-tracker", "productivity", "islam"],
+  "author": "",
+  "license": "MIT"
+}
